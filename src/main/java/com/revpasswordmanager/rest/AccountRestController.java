@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.controller;
+package com.revpasswordmanager.rest;
 
 import com.revpasswordmanager.dto.SecurityQuestionInput;
 import com.revpasswordmanager.repository.UserRepository;
@@ -14,15 +14,15 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/account")
-public class AccountController {
+public class AccountRestController {
 
     private final AuthService authService;
     private final VerificationCodeService verificationCodeService;
     private final UserRepository userRepository;
 
-    public AccountController(AuthService authService,
-                             VerificationCodeService verificationCodeService,
-                             UserRepository userRepository) {
+    public AccountRestController(AuthService authService,
+            VerificationCodeService verificationCodeService,
+            UserRepository userRepository) {
         this.authService = authService;
         this.verificationCodeService = verificationCodeService;
         this.userRepository = userRepository;
@@ -45,13 +45,14 @@ public class AccountController {
     @GetMapping("/security-questions")
     public List<Map<String, Object>> getQuestions(HttpSession session) {
         Long userId = requireUserId(session);
-        return authService.getSecurityQuestions(userId).stream().map(q -> Map.of("id", q.getId(), "question", q.getQuestion()))
+        return authService.getSecurityQuestions(userId).stream()
+                .map(q -> Map.<String, Object>of("id", q.getId(), "question", q.getQuestion()))
                 .collect(Collectors.toList());
     }
 
     @PutMapping("/security-questions")
     public Map<String, String> updateQuestions(@Valid @RequestBody List<SecurityQuestionInput> questions,
-                                                HttpSession session) {
+            HttpSession session) {
         Long userId = requireUserId(session);
         authService.updateSecurityQuestions(userId, questions);
         return Map.of("message", "Security questions updated");
@@ -62,7 +63,8 @@ public class AccountController {
         Long userId = requireUserId(session);
         String purpose = body.getOrDefault("purpose", "GENERIC");
         String code = verificationCodeService.issueCode(userId, purpose);
-        return Map.of("purpose", purpose, "verificationCode", code, "note", "In production, send via email/SMS instead of response");
+        return Map.of("purpose", purpose, "verificationCode", code, "note",
+                "In production, send via email/SMS instead of response");
     }
 
     @PostMapping("/verification-code/validate")
@@ -94,4 +96,3 @@ public class AccountController {
         return userId;
     }
 }
-

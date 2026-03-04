@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.service;
+package com.revpasswordmanager.service;
 
 import com.revpasswordmanager.dto.GeneratePasswordRequest;
 import org.springframework.stereotype.Service;

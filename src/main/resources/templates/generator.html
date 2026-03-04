@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator - RevPasswordManager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard-theme.css}">
+    <style>
+        .gen-output {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
+            border-radius: var(--radius-lg);
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gen-output::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        #passwordResult {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            word-break: break-all;
+            margin-bottom: 1.5rem;
+            color: #38bdf8;
+            text-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+            border: none;
+            background: transparent;
+        }
+
+        .strength-meter {
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .option-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius);
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .option-card:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .option-card.active {
+            border-color: var(--primary);
+            background: #eff6ff;
+            color: #1e3a8a;
+        }
+
+        .option-card input[type="checkbox"] {
+            display: none;
+        }
+
+        .check-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .option-card.active .check-icon {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .check-icon svg {
+            stroke: white;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s;
+        }
+
+        .option-card.active .check-icon svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <nav class="top-navbar">
+            <a href="/dashboard" class="brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                RevPassManager
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg> Dashboard
+                </a>
+                <a href="/vault">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg> Vault
+                </a>
+                <a href="/generator" class="active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4">
+                        </path>
+                    </svg> Generator
+                </a>
+                <a href="/security">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg> Security
+                </a>
+            </div>
+            <div class="user-info">
+                <div class="user-details">
+                    <span class="username" th:text="${user.username}"></span>
+                    <span class="email" th:text="${user.email}"></span>
+                </div>
+                <a href="/logout" class="btn btn-outline btn-sm">Log Out</a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <h2 style="font-weight: 700; font-size: 1.5rem;">Password Generator</h2>
+            </div>
+
+            <div class="content-wrapper">
+                <div style="max-width: 800px; margin: 0 auto;">
+
+                    <!-- Output Area -->
+                    <div class="gen-output">
+                        <div id="passwordResult">loading...</div>
+
+                        <div style="max-width: 400px; margin: 0 auto;">
+                            <div class="strength-meter">
+                                <div id="strengthBar" class="strength-bar"
+                                    style="background-color: var(--success); width: 100%;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center"
+                                style="color: #94a3b8; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+                                <span id="strengthText">Very Strong</span>
+                                <span id="strengthScore">100/100</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem;" class="d-flex justify-content-center gap-3">
+                            <button class="btn btn-success px-4 py-2 d-flex align-items-center gap-2"
+                                onclick="copyGeneratedPassword()"
+                                style="font-size: 1.1rem; box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.4);">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                Copy Password
+                            </button>
+                            <button class="btn btn-outline px-4 py-2 d-flex align-items-center gap-2"
+                                style="color: white; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);"
+                                onclick="generatePassword()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <polyline points="1 20 1 14 7 14"></polyline>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
+                                    </path>
+                                </svg>
+                                Regenerate
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Options Area -->
+                    <div class="card"
+                        style="box-shadow: var(--shadow-sm); border-radius: var(--radius-lg); border: none;">
+                        <div class="form-group mb-5">
+                            <label class="d-flex justify-content-between mb-3"
+                                style="font-size: 1.1rem; font-weight: 600; color: var(--dark);">
+                                <span>Password Length</span>
+                                <span id="lengthVal" style="color: var(--primary);">12 characters</span>
+                            </label>
+                            <input type="range" id="length" class="custom-slider" min="8" max="12" value="12"
+                                oninput="updateLengthDisplay(this.value); generatePassword();">
+                            <div class="d-flex justify-content-between mt-2 text-muted" style="font-size: 0.8rem;">
+                                <span>8</span>
+                                <span>12</span>
+                            </div>
+                        </div>
+
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 2rem;">
+                            <label class="option-card active" onclick="toggleOption(this, 'upper')">
+                                <input type="checkbox" id="upper" checked onchange="generatePassword()">
+                                <div class="check-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg></div>
+                                Uppercase (A-Z)
+                            </label>
+                            <label class="option-card active" onclick="toggleOption(this, 'lower')">
+                                <input type="checkbox" id="lower" checked onchange="generatePassword()">
+                                <div class="check-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg></div>
+                                Lowercase (a-z)
+                            </label>
+                            <label class="option-card active" onclick="toggleOption(this, 'digits')">
+                                <input type="checkbox" id="digits" checked onchange="generatePassword()">
+                                <div class="check-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg></div>
+                                Numbers (0-9)
+                            </label>
+                            <label class="option-card active" onclick="toggleOption(this, 'special')">
+                                <input type="checkbox" id="special" checked onchange="generatePassword()">
+                                <div class="check-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg></div>
+                                Symbols (!@#$)
+                            </label>
+                            <label class="option-card" onclick="toggleOption(this, 'excludeSimilar')"
+                                style="grid-column: 1 / -1;">
+                                <input type="checkbox" id="excludeSimilar" onchange="generatePassword()">
+                                <div class="check-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg></div>
+                                Exclude Ambiguous Characters (i, l, 1, L, o, 0, O)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => generatePassword());
+
+        let currentPassword = '';
+
+        function updateLengthDisplay(val) {
+            document.getElementById('lengthVal').textContent = `${val} characters`;
+        }
+
+        function toggleOption(element, checkboxId) {
+            // Wait for checkbox state to update, then update visual class
+            setTimeout(() => {
+                const cb = document.getElementById(checkboxId);
+                if (cb.checked) {
+                    element.classList.add('active');
+                } else {
+                    element.classList.remove('active');
+                }
+            }, 50);
+        }
+
+        async function generatePassword() {
+            const length = document.getElementById('length').value;
+            const upper = document.getElementById('upper').checked;
+            const lower = document.getElementById('lower').checked;
+            const digits = document.getElementById('digits').checked;
+            const special = document.getElementById('special').checked;
+            const excludeSimilar = document.getElementById('excludeSimilar').checked;
+
+            if (!upper && !lower && !digits && !special) {
+                document.getElementById('upper').checked = true;
+                document.getElementById('upper').parentElement.classList.add('active');
+                return generatePassword();
+            }
+
+            try {
+                const query = `length=${length}&upper=${upper}&lower=${lower}&digits=${digits}&special=${special}&excludeSimilar=${excludeSimilar}`;
+                const result = await apiCall(`/api/password-generator/generate?${query}`);
+
+                currentPassword = result.password;
+                document.getElementById('passwordResult').textContent = currentPassword;
+
+                const sb = document.getElementById('strengthBar');
+                const st = document.getElementById('strengthText');
+                const ss = document.getElementById('strengthScore');
+
+                sb.style.width = `${result.score}%`;
+                ss.textContent = `${result.score}/100`;
+                st.textContent = result.strength.toUpperCase();
+
+                let color = '#ef4444'; // default danger
+                if (result.score >= 80) { color = '#22c55e'; document.getElementById('passwordResult').style.color = '#38bdf8'; } // green, blue text
+                else if (result.score >= 60) { color = '#3b82f6'; document.getElementById('passwordResult').style.color = '#93c5fd'; } // blue
+                else if (result.score >= 40) { color = '#f59e0b'; document.getElementById('passwordResult').style.color = '#fcd34d'; } // yellow
+                else { document.getElementById('passwordResult').style.color = '#fca5a5'; } // red text
+
+                sb.style.backgroundColor = color;
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        function copyGeneratedPassword() {
+            if (!currentPassword) return;
+            copyToClipboard(currentPassword);
+        }
+    </script>
+</body>
+
+</html>

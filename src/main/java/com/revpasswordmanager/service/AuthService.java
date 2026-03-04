@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.service;
+package com.revpasswordmanager.service;
 
 import com.revpasswordmanager.dto.LoginRequest;
 import com.revpasswordmanager.dto.RecoveryRequest;
@@ -8,6 +8,8 @@ import com.revpasswordmanager.model.SecurityQuestion;
 import com.revpasswordmanager.model.User;
 import com.revpasswordmanager.repository.SecurityQuestionRepository;
 import com.revpasswordmanager.repository.UserRepository;
+import com.revpasswordmanager.mapper.UserMapper;
+import com.revpasswordmanager.mapper.SecurityQuestionMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,15 +26,21 @@ public class AuthService {
     private final SecurityQuestionRepository securityQuestionRepository;
     private final PasswordEncoder passwordEncoder;
     private final TwoFaService twoFaService;
+    private final UserMapper userMapper;
+    private final SecurityQuestionMapper securityQuestionMapper;
 
     public AuthService(UserRepository userRepository,
-                       SecurityQuestionRepository securityQuestionRepository,
-                       PasswordEncoder passwordEncoder,
-                       TwoFaService twoFaService) {
+            SecurityQuestionRepository securityQuestionRepository,
+            PasswordEncoder passwordEncoder,
+            TwoFaService twoFaService,
+            UserMapper userMapper,
+            SecurityQuestionMapper securityQuestionMapper) {
         this.userRepository = userRepository;
         this.securityQuestionRepository = securityQuestionRepository;
         this.passwordEncoder = passwordEncoder;
         this.twoFaService = twoFaService;
+        this.userMapper = userMapper;
+        this.securityQuestionMapper = securityQuestionMapper;
     }
 
     public Map<String, Object> register(RegisterRequest request) {
@@ -43,20 +51,14 @@ public class AuthService {
             throw new IllegalArgumentException("Username already exists");
         });
 
-        User user = new User();
-        user.setUsername(request.getUsername());
+        User user = userMapper.toEntity(request);
         user.setMasterPasswordHash(passwordEncoder.encode(request.getMasterPassword()));
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setTwoFaEnabled(false);
-        Long userId = userRepository.save(user);
+        user = userRepository.save(user);
+        Long userId = user.getId();
 
-        List<SecurityQuestion> questionRows = request.getSecurityQuestions().stream().map(q -> {
-            SecurityQuestion sq = new SecurityQuestion();
-            sq.setQuestion(q.getQuestion());
-            sq.setAnswerHash(passwordEncoder.encode(normalizeAnswer(q.getAnswer())));
-            return sq;
-        }).collect(Collectors.toList());
+        List<SecurityQuestion> questionRows = request.getSecurityQuestions().stream()
+                .map(q -> securityQuestionMapper.toEntity(q, passwordEncoder.encode(normalizeAnswer(q.getAnswer()))))
+                .collect(Collectors.toList());
         securityQuestionRepository.saveAll(userId, questionRows);
 
         return Map.of("userId", userId, "message", "Registration successful");
@@ -145,12 +147,9 @@ public class AuthService {
         if (inputs == null || inputs.size() < 3) {
             throw new IllegalArgumentException("At least 3 security questions are required");
         }
-        List<SecurityQuestion> rows = inputs.stream().map(in -> {
-            SecurityQuestion sq = new SecurityQuestion();
-            sq.setQuestion(in.getQuestion());
-            sq.setAnswerHash(passwordEncoder.encode(normalizeAnswer(in.getAnswer())));
-            return sq;
-        }).collect(Collectors.toList());
+        List<SecurityQuestion> rows = inputs.stream()
+                .map(in -> securityQuestionMapper.toEntity(in, passwordEncoder.encode(normalizeAnswer(in.getAnswer()))))
+                .collect(Collectors.toList());
         securityQuestionRepository.replaceAll(userId, rows);
     }
 
@@ -162,4 +161,3 @@ public class AuthService {
         return answer == null ? "" : answer.trim().toLowerCase();
     }
 }
-

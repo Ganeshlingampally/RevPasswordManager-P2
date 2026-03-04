@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.controller;
+package com.revpasswordmanager.rest;
 
 import com.revpasswordmanager.dto.CredentialRequest;
 import com.revpasswordmanager.service.VaultService;
@@ -13,13 +13,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vault")
-public class VaultController {
+public class VaultRestController {
 
     private final VaultService vaultService;
     private final int reauthWindowSeconds;
 
-    public VaultController(VaultService vaultService,
-                           @Value("${app.security.reauth-window-seconds}") int reauthWindowSeconds) {
+    public VaultRestController(VaultService vaultService,
+            @Value("${app.security.reauth-window-seconds}") int reauthWindowSeconds) {
         this.vaultService = vaultService;
         this.reauthWindowSeconds = reauthWindowSeconds;
     }
@@ -32,10 +32,10 @@ public class VaultController {
 
     @GetMapping
     public List<Map<String, Object>> list(@RequestParam(required = false) String q,
-                                          @RequestParam(required = false) String category,
-                                          @RequestParam(required = false, defaultValue = "updated") String sort,
-                                          @RequestParam(required = false, defaultValue = "false") boolean favoritesOnly,
-                                          HttpSession session) {
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false, defaultValue = "updated") String sort,
+            @RequestParam(required = false, defaultValue = "false") boolean favoritesOnly,
+            HttpSession session) {
         Long userId = requireUserId(session);
         return vaultService.list(userId, q, category, sort, favoritesOnly);
     }
@@ -49,8 +49,8 @@ public class VaultController {
 
     @PutMapping("/{id}")
     public Map<String, Object> update(@PathVariable Long id,
-                                      @Valid @RequestBody CredentialRequest request,
-                                      HttpSession session) {
+            @Valid @RequestBody CredentialRequest request,
+            HttpSession session) {
         Long userId = requireUserId(session);
         vaultService.update(userId, id, request);
         return Map.of("message", "Credential updated");
@@ -109,4 +109,3 @@ public class VaultController {
         }
     }
 }
-

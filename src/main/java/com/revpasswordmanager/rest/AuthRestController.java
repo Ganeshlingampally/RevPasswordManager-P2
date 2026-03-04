@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.controller;
+package com.revpasswordmanager.rest;
 
 import com.revpasswordmanager.dto.LoginRequest;
 import com.revpasswordmanager.dto.ReauthRequest;
@@ -14,12 +14,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class AuthRestController {
 
     private final AuthService authService;
     private final TwoFaService twoFaService;
 
-    public AuthController(AuthService authService, TwoFaService twoFaService) {
+    public AuthRestController(AuthService authService, TwoFaService twoFaService) {
         this.authService = authService;
         this.twoFaService = twoFaService;
     }
@@ -65,4 +65,3 @@ public class AuthController {
         return Map.of("message", enabled ? "2FA enabled" : "2FA disabled");
     }
 }
-

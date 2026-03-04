@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.controller;
+package com.revpasswordmanager.rest;
 
 import com.revpasswordmanager.dto.GeneratePasswordRequest;
 import com.revpasswordmanager.service.PasswordGeneratorService;
@@ -11,11 +11,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/passwords")
-public class PasswordToolController {
+public class PasswordToolRestController {
 
     private final PasswordGeneratorService passwordGeneratorService;
 
-    public PasswordToolController(PasswordGeneratorService passwordGeneratorService) {
+    public PasswordToolRestController(PasswordGeneratorService passwordGeneratorService) {
         this.passwordGeneratorService = passwordGeneratorService;
     }
 
@@ -28,4 +28,3 @@ public class PasswordToolController {
         return out;
     }
 }
-

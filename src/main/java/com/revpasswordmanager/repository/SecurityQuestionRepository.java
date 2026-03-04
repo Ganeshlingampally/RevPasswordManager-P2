@@ -1,45 +1,29 @@
-﻿package com.revpasswordmanager.repository;
+package com.revpasswordmanager.repository;
 
 import com.revpasswordmanager.model.SecurityQuestion;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Repository
-public class SecurityQuestionRepository {
+public interface SecurityQuestionRepository extends JpaRepository<SecurityQuestion, Long> {
 
-    private final JdbcTemplate jdbcTemplate;
+    List<SecurityQuestion> findByUserId(Long userId);
 
-    public SecurityQuestionRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    @Transactional
+    void deleteByUserId(Long userId);
 
-    private final RowMapper<SecurityQuestion> mapper = (rs, rowNum) -> {
-        SecurityQuestion q = new SecurityQuestion();
-        q.setId(rs.getLong("id"));
-        q.setUserId(rs.getLong("user_id"));
-        q.setQuestion(rs.getString("question"));
-        q.setAnswerHash(rs.getString("answer_hash"));
-        q.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-        return q;
-    };
-
-    public void saveAll(Long userId, List<SecurityQuestion> questions) {
-        String sql = "INSERT INTO security_questions (user_id, question, answer_hash, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
+    default void saveAll(Long userId, List<SecurityQuestion> questions) {
         for (SecurityQuestion q : questions) {
-            jdbcTemplate.update(sql, userId, q.getQuestion(), q.getAnswerHash());
+            q.setUserId(userId);
         }
+        saveAll((Iterable<SecurityQuestion>) questions);
     }
 
-    public List<SecurityQuestion> findByUserId(Long userId) {
-        return jdbcTemplate.query("SELECT * FROM security_questions WHERE user_id=?", mapper, userId);
-    }
-
-    public void replaceAll(Long userId, List<SecurityQuestion> questions) {
-        jdbcTemplate.update("DELETE FROM security_questions WHERE user_id=?", userId);
+    default void replaceAll(Long userId, List<SecurityQuestion> questions) {
+        deleteByUserId(userId);
         saveAll(userId, questions);
     }
 }
-

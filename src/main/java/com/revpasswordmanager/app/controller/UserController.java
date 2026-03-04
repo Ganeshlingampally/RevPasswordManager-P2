@@ -62,13 +62,13 @@ public class UserController {
                 body.get("currentPassword"), body.get("newPassword")));
     }
 
-    // --- Password Recovery ---
+
     @PostMapping("/recover-password")
     public ResponseEntity<UserResponseDTO> recoverPassword(@RequestBody PasswordRecoveryDTO dto) {
         return ResponseEntity.ok(userService.recoverPassword(dto));
     }
 
-    // --- Stepped Password Recovery (Security Questions + OTP) ---
+
 
     @GetMapping("/recovery/questions")
     public ResponseEntity<List<SecurityQuestionDTO>> getRecoveryQuestions(@RequestParam String username) {
@@ -86,7 +86,7 @@ public class UserController {
                 dto.getUsername(), dto.getOtpCode(), dto.getNewMasterPassword()));
     }
 
-    // --- Security Questions ---
+
     @PostMapping("/{userId}/security-questions")
     public ResponseEntity<List<SecurityQuestionDTO>> saveQuestions(
             @PathVariable Long userId, @RequestBody List<SecurityQuestionDTO> questions) {
@@ -98,7 +98,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getSecurityQuestions(userId));
     }
 
-    // --- Verification Codes ---
+
     @PostMapping("/{userId}/verification/generate")
     public ResponseEntity<Map<String, Object>> generateCode(
             @PathVariable Long userId, @RequestParam String purpose) {
@@ -111,7 +111,7 @@ public class UserController {
         return ResponseEntity.ok(userService.validateVerificationCode(userId, code, purpose));
     }
 
-    // --- 2FA Simulation ---
+
     @PostMapping("/{userId}/2fa/generate")
     public ResponseEntity<Map<String, Object>> generate2FA(@PathVariable Long userId) {
         return new ResponseEntity<>(userService.generate2FACode(userId), HttpStatus.CREATED);

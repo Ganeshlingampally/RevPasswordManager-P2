@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.service;
+package com.revpasswordmanager.service;
 
 import com.revpasswordmanager.model.User;
 import com.revpasswordmanager.repository.UserRepository;

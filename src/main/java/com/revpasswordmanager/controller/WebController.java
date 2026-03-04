@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.controller;
+package com.revpasswordmanager.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -1,4 +1,4 @@
-﻿package com.revpasswordmanager.dto;
+package com.revpasswordmanager.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
