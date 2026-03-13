@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Vault - RevPasswordManager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard-theme.css}">
+    <style>
+        .category-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .cat-social {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .cat-banking {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .cat-email {
+            background: #fef9c3;
+            color: #a16207;
+        }
+
+        .cat-shopping {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .cat-work {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .cat-other {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .pw-actions button {
+            transition: all 0.2s;
+        }
+
+        .pw-actions button:hover {
+            transform: scale(1.05);
+        }
+
+        .table-improved th {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid var(--border);
+            background-color: #f9fafb;
+        }
+
+        .table-improved td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-improved tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <a href="/dashboard" class="brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                RevPassManager
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg> Dashboard
+                </a>
+                <a href="/vault" class="active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg> Vault
+                </a>
+                <a href="/generator">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4">
+                        </path>
+                    </svg> Generator
+                </a>
+                <a href="/security">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg> Security
+                </a>
+            </div>
+            <div class="user-info">
+                <div class="user-details">
+                    <span class="username" th:text="${user.username}"></span>
+                    <span class="email" th:text="${user.email}"></span>
+                </div>
+                <a href="/logout" class="btn btn-outline btn-sm">Log Out</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <h2 style="font-weight: 700; font-size: 1.5rem;">My Vault</h2>
+                <button class="btn btn-primary d-flex align-items-center gap-2" onclick="openAddModal()"
+                    style="box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Password
+                </button>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="card p-0"
+                    style="border: none; box-shadow: var(--shadow-sm); border-radius: var(--radius-lg); overflow: hidden;">
+                    <!-- Filter Bar -->
+                    <div class="d-flex gap-3 flex-wrap align-items-center"
+                        style="background: #ffffff; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);">
+                        <div style="flex: 1; min-width: 250px; position: relative;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"
+                                stroke-width="2" style="position: absolute; left: 14px; top: 12px;">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="searchInput" class="form-control"
+                                placeholder="Search passwords, sites..." onkeyup="handleSearch()"
+                                style="padding-left: 40px; border-radius: 20px; background-color: #f9fafb; border-color: transparent;">
+                        </div>
+                        <select id="categoryFilter" class="form-control" onchange="handleFilter()"
+                            style="width: auto; border-radius: 20px; background-color: #f9fafb; border-color: transparent;">
+                            <option value="">All Categories</option>
+                            <option value="Social Media">Social Media</option>
+                            <option value="Banking">Banking</option>
+                            <option value="Email">Email</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Work">Work</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <select id="sortSelect" class="form-control" onchange="handleSort()"
+                            style="width: auto; border-radius: 20px; background-color: #f9fafb; border-color: transparent;">
+                            <option value="name">Sort A-Z</option>
+                            <option value="created">Newest First</option>
+                            <option value="updated">Recently Updated</option>
+                        </select>
+                        <button class="btn btn-outline" id="favFilterBtn" onclick="handleFavorites()"
+                            style="border-radius: 20px; background-color: white;">★ Favorites</button>
+                    </div>
+
+                    <!-- Credential List -->
+                    <div class="table-responsive">
+                        <table class="table-improved" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 35%;">SITE INFORMATION</th>
+                                    <th style="width: 20%;">USERNAME</th>
+                                    <th style="width: 20%;">PASSWORD</th>
+                                    <th style="width: 25%;" class="text-right">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="credentialList">
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">Loading your vault...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals remain the same functionally, design inherited from style.css -->
+    <!-- Add/Edit Modal (Collapsed for brevity, functional HTML remains exact) -->
+    <div class="modal-overlay" id="credModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Password</h3>
+                <button class="close-modal" onclick="closeModal('credModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editCredId">
+                <div class="form-group">
+                    <label>Site Name *</label>
+                    <input type="text" class="form-control" id="siteName">
+                </div>
+                <div class="form-group">
+                    <label>Site URL</label>
+                    <input type="text" class="form-control" id="siteUrl" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" class="form-control" id="siteUsername">
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="text" class="form-control" id="sitePassword">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="category" class="form-control">
+                        <option value="">Select category</option>
+                        <option value="Social Media">Social Media</option>
+                        <option value="Banking">Banking</option>
+                        <option value="Email">Email</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Work">Work</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <input type="text" class="form-control" id="notes">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('credModal')">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveCredential()">Save to Vault</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Delete Password</h3>
+                <button class="close-modal" onclick="closeModal('deleteModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to permanently delete this credential from your vault? This cannot be undone.
+                </p>
+                <input type="hidden" id="deleteCredId">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('deleteModal')">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete Permanently</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Password Verification Modal -->
+    <div class="modal-overlay" id="masterPwModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Verify Master Password</h3>
+                <button class="close-modal" onclick="cancelMasterPw()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3 text-muted">To protect your sensitive data, please authenticate using your master
+                    password.</p>
+                <div class="form-group mb-0">
+                    <input type="password" class="form-control" id="masterPwInput" placeholder="Enter Master Password"
+                        onkeydown="if(event.key==='Enter') verifyMasterPassword()">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="cancelMasterPw()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="verifyMasterPassword()">Verify Identity</button>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+    <script th:inline="javascript">
+        const userId = /*[[${user.userId}]]*/ 0;
+        let searchTimer;
+
+        document.addEventListener('DOMContentLoaded', () => loadCredentials());
+
+        async function loadCredentials() {
+            try {
+                const creds = await apiCall(`/api/credentials/user/${userId}`);
+                renderCredentials(creds);
+            } catch (e) {
+                showToast('Failed to load credentials: ' + e.message, 'error');
+            }
+        }
+
+        function getCatClass(cat) {
+            if (!cat) return 'cat-other';
+            const c = cat.toLowerCase();
+            if (c.includes('social')) return 'cat-social';
+            if (c.includes('bank')) return 'cat-banking';
+            if (c.includes('mail')) return 'cat-email';
+            if (c.includes('shop')) return 'cat-shopping';
+            if (c.includes('work')) return 'cat-work';
+            return 'cat-other';
+        }
+
+        function renderCredentials(creds) {
+            const container = document.getElementById('credentialList');
+            if (!creds || creds.length === 0) {
+                container.innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="text-muted mb-2">Your vault is empty</div><button class="btn btn-sm btn-primary" onclick="openAddModal()">Add Your First Password</button></td></tr>`;
+                return;
+            }
+
+            container.innerHTML = creds.map(c => `
+                <tr>
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <strong style="font-size: 1rem; color: #111827;">${escapeHtml(c.siteName)}</strong>
+                                ${c.favorite ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' : ''}
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="category-badge ${getCatClass(c.category)}">${escapeHtml(c.category || 'Other')}</span>
+                                ${c.siteUrl ? `<a href="${escapeHtml(c.siteUrl)}" target="_blank" class="text-muted" style="font-size: 0.75rem; text-decoration: underline;">Visit Site</a>` : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td style="color: #374151; font-weight: 500; font-size: 0.95rem;">
+                        ${escapeHtml(c.siteUsername)}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2 password-field">
+                            <span class="pw-text" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 1.25rem; line-height: 1; letter-spacing: 2px; color: #374151;" data-password="${escapeHtml(c.decryptedPassword)}">••••••••</span>
+                            <button class="btn btn-sm" onclick="protectedTogglePassword(this)" style="padding: 4px; background: transparent; border: none; color: #9ca3af;" title="Reveal Password">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="text-right pw-actions">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button class="btn btn-sm" style="background: #f3f4f6; color: #374151; border: none; font-weight: 500;" onclick="protectedCopy('${escapeJs(c.decryptedPassword)}')" title="Copy password">Copy</button>
+                            <button class="btn btn-sm btn-outline" style="border-color: #e5e7eb; color: #374151;" onclick="protectedEditModal(${c.credentialId}, '${escapeJs(c.siteName)}', '${escapeJs(c.siteUrl || '')}', '${escapeJs(c.siteUsername)}', '${escapeJs(c.decryptedPassword)}', '${escapeJs(c.category || '')}', '${escapeJs(c.notes || '')}')" title="Edit entry">Edit</button>
+                            ${c.favorite
+                    ? `<button class="btn btn-sm" style="background: #fffbeb; color: #d97706; border: 1px solid #fde68a;" onclick="toggleFavorite(${c.credentialId})" title="Remove from favorites">★ Starred</button>`
+                    : `<button class="btn btn-sm btn-outline" style="border-color: #e5e7eb; color: #6b7280;" onclick="toggleFavorite(${c.credentialId})" title="Add to favorites">☆ Star</button>`
+                }
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Password';
+            document.getElementById('editCredId').value = '';
+            document.getElementById('siteName').value = '';
+            document.getElementById('siteUrl').value = '';
+            document.getElementById('siteUsername').value = '';
+            document.getElementById('sitePassword').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('notes').value = '';
+            openModal('credModal');
+        }
+
+        function openEditModal(id, name, url, username, password, category, notes) {
+            document.getElementById('modalTitle').textContent = 'Edit Password';
+            document.getElementById('editCredId').value = id;
+            document.getElementById('siteName').value = name;
+            document.getElementById('siteUrl').value = url;
+            document.getElementById('siteUsername').value = username;
+            document.getElementById('sitePassword').value = password;
+            document.getElementById('category').value = category;
+            document.getElementById('notes').value = notes;
+            openModal('credModal');
+        }
+
+        async function saveCredential() {
+            const credId = document.getElementById('editCredId').value;
+            console.log("saveCredential triggered! credId:", credId);
+            const body = {
+                siteName: document.getElementById('siteName').value,
+                siteUrl: document.getElementById('siteUrl').value,
+                siteUsername: document.getElementById('siteUsername').value,
+                password: document.getElementById('sitePassword').value,
+                category: document.getElementById('category').value,
+                notes: document.getElementById('notes').value
+            };
+
+            console.log("Payload:", body);
+
+            if (!body.siteName || !body.siteUsername || !body.password) {
+                console.log("Validation failed!");
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+
+            try {
+                if (credId) {
+                    console.log("Updating existing credential...");
+                    await apiCall(`/api/credentials/${credId}/user/${userId}`, 'PUT', body);
+                    showToast('Password updated successfully!', 'success');
+                } else {
+                    console.log("Creating new credential...");
+                    await apiCall(`/api/credentials/${userId}`, 'POST', body);
+                    showToast('Password added securely!', 'success');
+                }
+                closeModal('credModal');
+                loadCredentials();
+            } catch (e) {
+                console.error("API Error in saveCredential:", e);
+                showToast(e.message, 'error');
+            }
+        }
+
+        function openDeleteModal(credId) {
+            document.getElementById('deleteCredId').value = credId;
+            openModal('deleteModal');
+        }
+
+        async function confirmDelete() {
+            const credId = document.getElementById('deleteCredId').value;
+            try {
+                await apiCall(`/api/credentials/${credId}/user/${userId}`, 'DELETE');
+                closeModal('deleteModal');
+                loadCredentials();
+                showToast('Password deleted', 'success');
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+
+        function handleSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(async () => {
+                const keyword = document.getElementById('searchInput').value.trim();
+                if (!keyword) { loadCredentials(); return; }
+                try {
+                    const creds = await apiCall(`/api/credentials/user/${userId}/search?keyword=${encodeURIComponent(keyword)}`);
+                    renderCredentials(creds);
+                } catch (e) { }
+            }, 400);
+        }
+
+        async function handleFilter() {
+            const category = document.getElementById('categoryFilter').value;
+            if (!category) { loadCredentials(); return; }
+            try {
+                const creds = await apiCall(`/api/credentials/user/${userId}/filter?category=${encodeURIComponent(category)}`);
+                renderCredentials(creds);
+            } catch (e) { }
+        }
+
+        async function handleSort() {
+            const sortBy = document.getElementById('sortSelect').value;
+            try {
+                const creds = await apiCall(`/api/credentials/user/${userId}/sort?sortBy=${sortBy}`);
+                renderCredentials(creds);
+            } catch (e) { }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        function escapeJs(text) {
+            return (text || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        let showingFavorites = false;
+        async function handleFavorites() {
+            showingFavorites = !showingFavorites;
+            const btn = document.getElementById('favFilterBtn');
+            if (showingFavorites) {
+                btn.style.backgroundColor = '#fbbf24';
+                btn.style.borderColor = '#fbbf24';
+                btn.style.color = '#fff';
+                try {
+                    const creds = await apiCall(`/api/credentials/user/${userId}/favorites`);
+                    renderCredentials(creds);
+                } catch (e) { }
+            } else {
+                btn.style.backgroundColor = 'white';
+                btn.style.borderColor = '#d1d5db';
+                btn.style.color = 'var(--text-main)';
+                loadCredentials();
+            }
+        }
+
+        async function toggleFavorite(credId) {
+            try {
+                await apiCall(`/api/credentials/${credId}/user/${userId}/favorite`, 'PUT');
+                if (showingFavorites) { handleFavorites(); showingFavorites = false; handleFavorites(); }
+                else loadCredentials();
+            } catch (e) { }
+        }
+
+        // ===== Master Password Verification =====
+        let pendingAction = null;
+
+        function requireMasterPassword(action) {
+            // Always ask for master password
+            pendingAction = action;
+            document.getElementById('masterPwInput').value = '';
+            openModal('masterPwModal');
+            setTimeout(() => document.getElementById('masterPwInput').focus(), 100);
+        }
+
+        async function verifyMasterPassword() {
+            const password = document.getElementById('masterPwInput').value;
+            if (!password) { showToast('Please enter your master password', 'error'); return; }
+            try {
+                await apiCall(`/api/users/${userId}/verify-password`, 'POST', { password });
+            } catch (e) {
+                showToast('Invalid master password', 'error');
+                document.getElementById('masterPwInput').value = '';
+                document.getElementById('masterPwInput').focus();
+                return;
+            }
+
+            closeModal('masterPwModal');
+            if (pendingAction) {
+                try {
+                    pendingAction();
+                } catch (err) {
+                    console.error('Error executing pending action:', err);
+                }
+                pendingAction = null;
+            }
+        }
+
+        function cancelMasterPw() {
+            pendingAction = null;
+            closeModal('masterPwModal');
+        }
+
+        function protectedTogglePassword(btn) {
+            requireMasterPassword(() => togglePassword(btn));
+        }
+
+        function protectedCopy(password) {
+            requireMasterPassword(() => copyToClipboard(password));
+        }
+
+        function protectedEditModal(id, name, url, username, password, category, notes) {
+            requireMasterPassword(() => openEditModal(id, name, url, username, password, category, notes));
+        }
+
+        function protectedDeleteModal(credId) {
+            requireMasterPassword(() => openDeleteModal(credId));
+        }
+    </script>
+</body>
+
+</html>

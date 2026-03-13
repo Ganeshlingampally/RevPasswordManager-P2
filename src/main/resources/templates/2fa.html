@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2FA Verification - RevPasswordManager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .auth-container {
+            display: flex;
+            min-height: 100vh;
+            padding: 0;
+            background-color: var(--body-bg);
+            background-image: none;
+        }
+
+        .auth-split-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: linear-gradient(135deg, var(--warning) 0%, #b45309 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-split-left::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.5;
+        }
+
+        .auth-split-left-content {
+            position: relative;
+            z-index: 10;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        .auth-split-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background-color: var(--body-bg);
+        }
+
+        .auth-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 3rem;
+            width: 100%;
+            max-width: 460px;
+            border: 1px solid var(--border);
+        }
+
+        .auth-card h1 {
+            text-align: left;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            color: var(--dark);
+        }
+
+        .auth-card p {
+            text-align: left;
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .auth-split-left {
+                display: none;
+            }
+
+            .auth-container {
+                justify-content: center;
+                padding: 20px;
+                background-image: radial-gradient(circle at center, #f3f4f6 0%, #e5e7eb 100%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container">
+        <!-- Left Side -->
+        <div class="auth-split-left">
+            <div class="auth-split-left-content">
+                <div class="brand-logo">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    <span>RevPassManager</span>
+                </div>
+                <h2 style="color: white; font-size: 2.25rem; font-weight: 700; margin-bottom: 20px; line-height: 1.2;">
+                    Extra Protection.</h2>
+                <p style="font-size: 1.1rem; color: rgba(255,255,255,0.9); line-height: 1.6;">Two-factor authentication
+                    ensures only you can access your encrypted vault, giving you peace of mind.</p>
+
+                <div
+                    style="margin-top: 50px; display: inline-block; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 20px; border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.3);">
+                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.95;">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <circle cx="12" cy="11" r="3"></circle>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side -->
+        <div class="auth-split-right">
+            <div class="auth-card">
+                <h1>Verify Identity</h1>
+                <p>Two-Factor Authentication is currently enabled.</p>
+
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="alert alert-info d-flex align-items-start gap-2 mb-4"
+                    style="background:#e0f2fe; border-color:#bae6fd; color:#0369a1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="flex-shrink:0; margin-top:2px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <div>A verification code has been generated. Check the server console log for your code
+                        (Simulation).</div>
+                </div>
+
+                <form action="/web/verify-2fa" method="post">
+                    <div class="form-group mb-4">
+                        <label for="code"
+                            style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 8px;">6-Digit
+                            OTP Code</label>
+                        <input type="text" id="code" name="code" class="form-control text-center"
+                            placeholder="• • • • • •" maxlength="6" required
+                            style="font-size: 1.75rem; letter-spacing: 12px; padding: 15px; font-weight: 600; font-family: monospace; border-radius: var(--radius-lg); background: #f8fafc;">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block py-3"
+                        style="font-size: 1.05rem; font-weight: 600;">Confirm Verification</button>
+                </form>
+
+                <div class="text-center mt-4 pt-4" style="border-top: 1px solid var(--border); font-size: 0.95rem;">
+                    <a href="/login" class="text-muted" style="display: inline-flex; align-items: center; gap: 5px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+
+</html>

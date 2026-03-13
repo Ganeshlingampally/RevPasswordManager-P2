@@ -1,0 +1,54 @@
+﻿# RevPasswordManager - P2
+
+Secure full-stack monolithic Password Manager built using **Java, Spring Boot, Oracle SQL, Maven, JUnit4, and Log4J2**.
+
+---
+
+## Project Overview
+
+RevPasswordManager is a secure password management application that allows users to store, manage, and generate passwords safely.  
+The system implements strong authentication, encryption, and security auditing to protect user credentials.
+
+---
+
+## Features
+
+- User registration with **master password**
+- Minimum **3 security questions for account recovery**
+- Login / Logout with **2FA simulation**
+- Profile update and **master password change**
+- Account recovery using **security questions**
+- Secure password **vault management (CRUD operations)**
+- Credential **search, filter, sort, and favorites**
+- **Re-authentication** before viewing sensitive data
+- **Password generator** with strength validation
+- **Verification code workflow** for sensitive actions
+- **Security audit report** for weak passwords
+- **Encrypted vault export/import**
+- Security question management with validation rules
+
+---
+
+## Technology Stack
+
+### Backend
+- Java 21
+- Spring Boot 3.3.x
+- Spring JDBC
+- Oracle Database
+
+### Build & Tools
+- Maven
+- Log4J2
+- JUnit4
+- Mockito
+
+### Testing
+- Unit Testing
+- Service Layer Testing
+
+---
+
+## Architecture
+
+This project follows **Layered Architecture**:
