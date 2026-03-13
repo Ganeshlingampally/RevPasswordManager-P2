@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration - RevPasswordManager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .auth-container {
+            display: flex;
+            min-height: 100vh;
+            padding: 0;
+            background-color: var(--body-bg);
+            background-image: none;
+        }
+
+        .auth-split-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: linear-gradient(135deg, var(--success) 0%, #064e3b 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-split-left::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.5;
+        }
+
+        .auth-split-left-content {
+            position: relative;
+            z-index: 10;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        .auth-split-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background-color: var(--body-bg);
+        }
+
+        .auth-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
+
+        .auth-card h1 {
+            text-align: left;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            color: var(--dark);
+        }
+
+        .auth-card p {
+            text-align: left;
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .auth-split-left {
+                display: none;
+            }
+
+            .auth-container {
+                justify-content: center;
+                padding: 20px;
+                background-image: radial-gradient(circle at center, #f3f4f6 0%, #e5e7eb 100%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container">
+        <!-- Left Side: Branding & Illustration -->
+        <div class="auth-split-left">
+            <div class="auth-split-left-content">
+                <div class="brand-logo">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    <span>RevPassManager</span>
+                </div>
+                <h2 style="color: white; font-size: 2.25rem; font-weight: 700; margin-bottom: 20px; line-height: 1.2;">
+                    Join millions of secure users.</h2>
+                <p style="font-size: 1.1rem; color: rgba(255,255,255,0.8); line-height: 1.6;">Create your personal
+                    encrypted vault today and take control of your digital security forever.</p>
+
+                <div
+                    style="margin-top: 50px; display: inline-block; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.2);">
+                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.9;">
+                        <path
+                            d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Register Form -->
+        <div class="auth-split-right">
+            <div class="auth-card">
+                <h1>Create Account</h1>
+                <p>Set up your new secure vault in seconds.</p>
+
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <form action="/web/register" method="post">
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="form-group mb-0" style="flex: 1;">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" name="firstName" class="form-control" placeholder="John">
+                        </div>
+                        <div class="form-group mb-0" style="flex: 1;">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Doe">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username *</label>
+                        <input type="text" id="username" name="username" class="form-control"
+                            placeholder="Choose a unique username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com"
+                            required>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="masterPassword">Master Password *</label>
+                        <input type="password" id="masterPassword" name="masterPassword" class="form-control"
+                            placeholder="Strong master password" required>
+                        <small class="text-muted" style="display: block; margin-top: 5px;">This is the only password you
+                            need to remember.</small>
+                    </div>
+
+                    <hr style="border-top: 1px solid var(--border); margin: 2rem 0;">
+                    <h4 style="font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--dark);">Security Questions
+                        (Account Recovery)</h4>
+                    <small class="text-muted" style="display: block; margin-bottom: 1rem;">These 3 questions will be
+                        used to recover your account if you forget your master password.</small>
+
+                    <!-- Question 1 -->
+                    <div class="form-group">
+                        <label for="q1">Security Question 1 *</label>
+                        <input type="text" id="q1" name="q1" class="form-control"
+                            placeholder="e.g., What was the name of your first pet?" required>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="a1">Answer 1 *</label>
+                        <input type="password" id="a1" name="a1" class="form-control" placeholder="Your answer"
+                            required>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="form-group">
+                        <label for="q2">Security Question 2 *</label>
+                        <input type="text" id="q2" name="q2" class="form-control"
+                            placeholder="e.g., What city were you born in?" required>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="a2">Answer 2 *</label>
+                        <input type="password" id="a2" name="a2" class="form-control" placeholder="Your answer"
+                            required>
+                    </div>
+
+                    <!-- Question 3 -->
+                    <div class="form-group">
+                        <label for="q3">Security Question 3 *</label>
+                        <input type="text" id="q3" name="q3" class="form-control"
+                            placeholder="e.g., What is your mother's maiden name?" required>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="a3">Answer 3 *</label>
+                        <input type="password" id="a3" name="a3" class="form-control" placeholder="Your answer"
+                            required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-block py-3"
+                        style="font-size: 1.05rem; font-weight: 600;">Create Account</button>
+                </form>
+
+                <div class="text-center mt-4 pt-4" style="border-top: 1px solid var(--border); font-size: 0.95rem;">
+                    Already have an account? <a href="/login" style="font-weight: 600;">Sign in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
